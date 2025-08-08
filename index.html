@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MP3 Tag Renamer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            background: #f6f8fa;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 480px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+            padding: 32px 28px 24px 28px;
+        }
+        h1 {
+            text-align: center;
+            color: #2d3a4b;
+            margin-bottom: 24px;
+            font-size: 2rem;
+        }
+        label {
+            display: block;
+            margin-top: 18px;
+            margin-bottom: 6px;
+            color: #34495e;
+            font-weight: 500;
+        }
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            box-sizing: border-box;
+        }
+        input[type="file"] {
+            padding: 4px 0;
+        }
+        button {
+            width: 100%;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 18px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .messages {
+            margin-bottom: 18px;
+        }
+        .messages ul {
+            padding-left: 18px;
+            color: #e11d48;
+        }
+        #fileList {
+            margin-top: 10px;
+            font-size: 0.97rem;
+            color: #374151;
+            max-height: 120px;
+            overflow-y: auto;
+            border-left: 2px solid #e5e7eb;
+            padding-left: 10px;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 18px 6px 12px 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MP3 Shmyak Tag Renamer</h1>
+        <div class="messages">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <ul>
+            {% for message in messages %}
+              <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+        </div>
+        <form method="post" enctype="multipart/form-data">
+            <label for="title">Enter title:</label>
+            <input type="text" name="title" id="title" placeholder="e.g. MySong" required>
+
+            <label for="album">Album:</label>
+            <input type="text" name="album" id="album" placeholder="Album name">
+
+            <label for="artist">Artist:</label>
+            <input type="text" name="artist" id="artist" placeholder="Artist name">
+
+            <label for="genre">Genre:</label>
+            <input type="text" name="genre" id="genre" placeholder="Genre">
+
+            <!--
+            <label for="comments">Comments:</label>
+            <input type="text" name="comments" id="comments" placeholder="Comments">
+            -->
+
+            <label for="mp3files">Select a folder with MP3 files:</label>
+            <input type="file" name="mp3files" id="mp3files" accept=".mp3" multiple webkitdirectory directory required onchange="showFiles(this)">
+
+            <ul id="fileList"></ul>
+
+            <button type="submit">Upload and Rename Tags</button>
+        </form>
+    </div>
+    <script>
+    function showFiles(input) {
+        var fileList = document.getElementById('fileList');
+        fileList.innerHTML = '';
+        for (var i = 0; i < input.files.length; i++) {
+            var li = document.createElement('li');
+            li.textContent = input.files[i].webkitRelativePath || input.files[i].name;
+            fileList.appendChild(li);
+        }
+    }
+    </script>
+</body>
+</html>
