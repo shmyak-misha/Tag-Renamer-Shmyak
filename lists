@@ -1,0 +1,11 @@
+products = ['apples','oranges','plums','bananas','kiwis','lemons']
+print(products[:-1])
+products = ('apples','oranges','plums','bananas','kiwis','lemons')
+print(products)
+products = (lemons, kiwis, *bananas) = (10, 20 , 30, 40, 50)
+print(bananas)
+products = ('lemons', 'kiwis', 'bananas', 'plums', 'oranges', 'apples')
+
+basket = dict(orange = 1.2)
+print (type(basket))
+
