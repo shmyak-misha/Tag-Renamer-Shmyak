@@ -1,0 +1,12 @@
+    # Example render.yaml content (replace with your actual configuration)
+    services:
+      - type: web
+        name: my-web-service
+        env: node
+        buildCommand: yarn; yarn build
+        startCommand: yarn start
+        plan: free
+        pullRequestPreviewsEnabled: true
+        envVars:
+          - key: NODE_ENV
+            value: production
