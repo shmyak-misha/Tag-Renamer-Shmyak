@@ -5,6 +5,8 @@ from mutagen.easyid3 import EasyID3
 from werkzeug.utils import secure_filename
 import shutil
 
+from flask import send_from_directory
+
 #from mutagen.easyid3 import EasyID3
 #EasyID3.RegisterTextKey('comment', 'COMM')
 app = Flask(__name__)
@@ -69,3 +71,8 @@ def index():
     return redirect(url_for("index"))
 if __name__ == "__main__":
     app.run(debug=True)
+
+# Route to download files from uploads/new/
+@app.route("/download/<path:filename>")
+def download_file(filename):
+    return send_from_directory(NEW_FOLDER, filename, as_attachment=True)
