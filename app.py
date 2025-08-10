@@ -22,12 +22,32 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    # Clear only the relevant subfolders before processing new uploads
+    uploaded_rel_dirs = set()
+    if request.method == "POST":
+        files = request.files.getlist("mp3files")
+        for file in files:
+            rel_path = file.filename
+            rel_dir = os.path.dirname(rel_path)
+            if rel_dir:
+                uploaded_rel_dirs.add(rel_dir)
+        for rel_dir in uploaded_rel_dirs:
+            target_dir = os.path.join(NEW_FOLDER, rel_dir)
+            if os.path.exists(target_dir):
+                for f in os.listdir(target_dir):
+                    file_path = os.path.join(target_dir, f)
+                    if os.path.isfile(file_path):
+                        os.remove(file_path)
     files_for_download = []
-    az_folder = os.path.join(NEW_FOLDER, "az")
-    if os.path.exists(az_folder):
-        for f in os.listdir(az_folder):
+    # Collect all mp3 files in all subfolders of NEW_FOLDER
+    for root, dirs, files_in_dir in os.walk(NEW_FOLDER):
+        for f in files_in_dir:
             if f.lower().endswith('.mp3'):
-                files_for_download.append(f"az/{f}")
+                rel_dir = os.path.relpath(root, NEW_FOLDER)
+                if rel_dir == ".":
+                    files_for_download.append(f)
+                else:
+                    files_for_download.append(f"{rel_dir}/{f}")
     if request.method != "POST":
         return render_template("index.html", files=files_for_download)
     title = request.form.get("title", "Tag")
