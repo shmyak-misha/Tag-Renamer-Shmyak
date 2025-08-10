@@ -6,6 +6,9 @@ from werkzeug.utils import secure_filename
 import shutil
 
 from flask import send_from_directory
+from flask import send_file
+import io
+import zipfile
 
 #from mutagen.easyid3 import EasyID3
 #EasyID3.RegisterTextKey('comment', 'COMM')
@@ -19,13 +22,18 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    files_for_download = []
+    az_folder = os.path.join(NEW_FOLDER, "az")
+    if os.path.exists(az_folder):
+        for f in os.listdir(az_folder):
+            if f.lower().endswith('.mp3'):
+                files_for_download.append(f"az/{f}")
     if request.method != "POST":
-        return render_template("index.html")
+        return render_template("index.html", files=files_for_download)
     title = request.form.get("title", "Tag")
     album = request.form.get("album", "")
     artist = request.form.get("artist", "")
     genre = request.form.get("genre", "")
-    #comments = request.form.get("comments", "")
     files = request.files.getlist("mp3files")
     print("Files received:", [file.filename for file in files])
     if not files:
@@ -63,12 +71,15 @@ def index():
             audio['album'] = album
         if genre:
             audio['genre'] = genre
-        #if comments:
-        #    from mutagen.id3 import COMM
-            #audio.tags.add(COMM(encoding=3, lang='eng', desc='', text=comments))
         audio.save()
     flash(f"Copied and updated {len(files)} MP3 files in 'new' folder with tag '{title} #'!")
-    return redirect(url_for("index"))
+    # Refresh file list after upload
+    files_for_download = []
+    if os.path.exists(az_folder):
+        for f in os.listdir(az_folder):
+            if f.lower().endswith('.mp3'):
+                files_for_download.append(f"az/{f}")
+    return render_template("index.html", files=files_for_download)
 if __name__ == "__main__":
     app.run(debug=True)
 
@@ -76,3 +87,18 @@ if __name__ == "__main__":
 @app.route("/download/<path:filename>")
 def download_file(filename):
     return send_from_directory(NEW_FOLDER, filename, as_attachment=True)
+
+# Route to download the entire az folder as a zip
+@app.route("/download-az-zip")
+def download_az_zip():
+    az_folder = os.path.join(NEW_FOLDER, "az")
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
+        if os.path.exists(az_folder):
+            for root, dirs, files in os.walk(az_folder):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(file_path, az_folder)
+                    zipf.write(file_path, arcname)
+    zip_buffer.seek(0)
+    return send_file(zip_buffer, mimetype="application/zip", as_attachment=True, download_name="az_folder.zip")

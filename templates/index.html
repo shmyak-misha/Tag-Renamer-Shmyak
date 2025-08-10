@@ -122,6 +122,18 @@
 
             <button type="submit">Upload and Rename Tags</button>
         </form>
+
+        {% if files %}
+        <div style="margin-top: 30px;">
+            <h2>Download Processed Files</h2>
+            <a href="{{ url_for('download_az_zip') }}" style="font-weight:600; color:#2563eb; text-decoration:underline;">Download All as ZIP</a>
+            <ul>
+            {% for file in files %}
+                <li><a href="{{ url_for('download_file', filename=file) }}" download>{{ file }}</a></li>
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
     </div>
     <script>
     function showFiles(input) {
