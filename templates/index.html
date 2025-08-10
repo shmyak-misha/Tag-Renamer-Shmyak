@@ -110,17 +110,26 @@
             <label for="genre">Genre:</label>
             <input type="text" name="genre" id="genre" placeholder="Genre">
 
-            <!--
-            <label for="comments">Comments:</label>
-            <input type="text" name="comments" id="comments" placeholder="Comments">
-            -->
-
             <label for="mp3files">Select a folder with MP3 files:</label>
             <input type="file" name="mp3files" id="mp3files" accept=".mp3" multiple webkitdirectory directory required onchange="showFiles(this)">
 
             <ul id="fileList"></ul>
 
-            <button type="submit">Upload and Rename Tags</button>
+            <button type="button" id="uploadBtn">Upload and Rename Tags</button>
+        </form>
+        <div id="progressContainer" style="display:none;margin-top:16px;">
+            <div style="background:#e5e7eb;border-radius:5px;height:18px;width:100%;overflow:hidden;">
+                <div id="progressBar" style="background:#2563eb;height:100%;width:0%;transition:width 0.2s;"></div>
+            </div>
+            <div id="progressText" style="margin-top:4px;font-size:0.95rem;color:#374151;"></div>
+        </div>
+        // Disable the button on submit and show a spinner
+        document.querySelector('form').addEventListener('submit', function(e) {
+            var btn = this.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+        });
+        </script>
         </form>
 
         {% if files %}
@@ -145,6 +154,55 @@
             fileList.appendChild(li);
         }
     }
+
+    document.getElementById('uploadBtn').onclick = function() {
+        var form = document.querySelector('form');
+        var formData = new FormData(form);
+        var files = document.getElementById('mp3files').files;
+        if (!files.length) {
+            alert('Please select files to upload.');
+            return;
+        }
+        var btn = document.getElementById('uploadBtn');
+        btn.disabled = true;
+        btn.textContent = 'Processing...';
+        var progressContainer = document.getElementById('progressContainer');
+        var progressBar = document.getElementById('progressBar');
+        var progressText = document.getElementById('progressText');
+        progressContainer.style.display = 'block';
+        progressBar.style.width = '0%';
+        progressText.textContent = '';
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/', true);
+        xhr.upload.onprogress = function(e) {
+            if (e.lengthComputable) {
+                var percent = Math.round((e.loaded / e.total) * 100);
+                progressBar.style.width = percent + '%';
+                progressText.textContent = 'Uploading: ' + percent + '%';
+            }
+        };
+        xhr.onload = function() {
+            btn.disabled = false;
+            btn.textContent = 'Upload and Rename Tags';
+            if (xhr.status === 200) {
+                progressBar.style.width = '100%';
+                progressText.textContent = 'Processing complete!';
+                // Replace the page content with the new HTML (download links, etc.)
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(xhr.responseText, 'text/html');
+                document.body.innerHTML = doc.body.innerHTML;
+            } else {
+                progressText.textContent = 'Error: ' + xhr.statusText;
+            }
+        };
+        xhr.onerror = function() {
+            btn.disabled = false;
+            btn.textContent = 'Upload and Rename Tags';
+            progressText.textContent = 'Upload failed.';
+        };
+        xhr.send(formData);
+    };
     </script>
 </body>
 </html>

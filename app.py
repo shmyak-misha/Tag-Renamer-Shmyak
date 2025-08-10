@@ -38,6 +38,9 @@ def index():
     print("Files received:", [file.filename for file in files])
     if not files:
         flash("No files uploaded.")
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # AJAX: return updated HTML
+            return render_template("index.html", files=files_for_download)
         return redirect(url_for("index"))   
     for idx, file in enumerate(files, start=0):  # Start from 0
         rel_path = file.filename  # This preserves subfolders if present
@@ -79,6 +82,9 @@ def index():
         for f in os.listdir(az_folder):
             if f.lower().endswith('.mp3'):
                 files_for_download.append(f"az/{f}")
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # AJAX: return updated HTML
+        return render_template("index.html", files=files_for_download)
     return render_template("index.html", files=files_for_download)
 if __name__ == "__main__":
     app.run(debug=True)
