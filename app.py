@@ -37,15 +37,8 @@ def index():
                     file_path = os.path.join(target_dir, f)
                     if os.path.isfile(file_path):
                         os.remove(file_path)
-    files_for_download = []
-    # Collect all mp3 files in all subfolders of NEW_FOLDER
-    for root, dirs, files_in_dir in os.walk(NEW_FOLDER):
-        for f in files_in_dir:
-            if f.lower().endswith('.mp3'):
-                rel_dir = os.path.relpath(root, NEW_FOLDER)
-                files_for_download.append(f if rel_dir == "." else f"{rel_dir}/{f}")
     if request.method != "POST":
-        return render_template("index.html", files=files_for_download)
+        return render_template("index.html")
     title = request.form.get("title", "Tag")
     album = request.form.get("album", "")
     artist = request.form.get("artist", "")
@@ -94,6 +87,11 @@ def index():
     flash(f"Copied and updated {len(files)} MP3 files in 'new' folder with tag '{title} #'!")
     # Refresh file list after upload
     files_for_download = []
+    for root, dirs, files_in_dir in os.walk(NEW_FOLDER):
+        for f in files_in_dir:
+            if f.lower().endswith('.mp3'):
+                rel_dir = os.path.relpath(root, NEW_FOLDER)
+                files_for_download.append(f if rel_dir == "." else f"{rel_dir}/{f}")
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         # AJAX: return updated HTML
         return render_template("index.html", files=files_for_download)
